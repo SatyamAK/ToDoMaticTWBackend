@@ -5,6 +5,7 @@ import com.neev.ToDoMaticTW.requests.UserRequest;
 import com.neev.ToDoMaticTW.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,9 @@ public class UserController {
 
     @Autowired
     UserService userService;
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     @PostMapping("/auth/register")
     ResponseEntity registerUser(@RequestBody UserRequest userRequest){
 
@@ -21,7 +25,9 @@ public class UserController {
             return  ResponseEntity.badRequest().body("Username or Password cannot be empty");
         }
 
-        User user = new User(userRequest.getUsername(), userRequest.getPassword());
+        String encryptedPassword = passwordEncoder.encode(userRequest.getPassword());
+        User user = new User(userRequest.getUsername(), encryptedPassword);
+
         if(userService.doesUserExistsAlready(user.getUsername()))
             return ResponseEntity.badRequest().body("Username already taken");
 
