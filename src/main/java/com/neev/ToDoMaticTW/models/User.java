@@ -1,6 +1,7 @@
 package com.neev.ToDoMaticTW.models;
 
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,7 +12,7 @@ import java.util.List;
 @Document(collection = "users")
 public class User implements UserDetails {
 
-    private String id;
+    @MongoId
     private String username;
     private String password;
     private List<GrantedAuthority> authorities;
@@ -23,14 +24,6 @@ public class User implements UserDetails {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     @Override
