@@ -27,15 +27,49 @@ public class JWTUtils {
     @Autowired
     private UserService userService;
 
-    public String generateToken(Authentication authentication){
+    private byte[] secretBytesGenerator(){
         String base64Secret = Encoders.BASE64.encode(secret.getBytes());
         byte[] secretBytes = Decoders.BASE64.decode(base64Secret);
+
+        return secretBytes;
+    }
+    public String generateToken(Authentication authentication){
 
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date().getTime()) + expiration))
-                .signWith(Keys.hmacShaKeyFor(secretBytes), SignatureAlgorithm.HS512)
+                .signWith(Keys.hmacShaKeyFor(secretBytesGenerator()), SignatureAlgorithm.HS512)
                 .compact();
+    }
+
+    private String getTrimmedToken(String token){
+        return token.substring(7, token.length());
+    }
+    public String getUsernameFromToken(String token){
+
+        if(token != null && isValidToken(token)){
+            String username = Jwts.parserBuilder()
+                    .setSigningKey(secretBytesGenerator())
+                    .build()
+                    .parseClaimsJws(getTrimmedToken(token))
+                    .getBody().getSubject();
+
+            return username;
+        }
+
+        return null;
+    }
+
+    public boolean isValidToken(String token){
+        try {
+            String base64Secret = Encoders.BASE64.encode(secret.getBytes());
+            byte[] secretBytes = Decoders.BASE64.decode(base64Secret);
+
+            Jwts.parserBuilder().setSigningKey(secretBytesGenerator()).build().parse(getTrimmedToken(token));
+            return true;
+        } catch (Exception e){
+            return false;
+        }
     }
 }

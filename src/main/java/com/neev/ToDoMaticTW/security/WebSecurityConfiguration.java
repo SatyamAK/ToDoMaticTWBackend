@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -15,6 +16,14 @@ public class WebSecurityConfiguration {
 
     @Autowired
     UserService userService;
+    @Autowired
+    JWTUtils jwtUtils;
+
+    @Bean
+    AuthenticationEntryPoint authenticationEntryPoint(){
+        return new EntryPointHandler();
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -30,8 +39,10 @@ public class WebSecurityConfiguration {
         httpSecurity.csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
+                .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint()).and()
+                .addFilter(new JWTFilter(customAuthenticationManager(), jwtUtils))
                 .authorizeRequests().antMatchers("/auth/**").permitAll()
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
                 .and();
 
         return httpSecurity.build();

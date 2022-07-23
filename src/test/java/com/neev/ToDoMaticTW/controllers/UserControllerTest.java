@@ -167,4 +167,12 @@ class UserControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Wrong password"));
     }
+
+    @Test
+    @DisplayName("Testing for access restriction for unauthenticated users")
+    void UnAuthenticatedUsersShouldNotBeAccessAnyOtherAPIS() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/?username=test"))
+                .andExpect(status().isUnauthorized());
+    }
 }
