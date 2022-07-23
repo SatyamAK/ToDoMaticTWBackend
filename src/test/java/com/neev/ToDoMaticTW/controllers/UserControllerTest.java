@@ -24,8 +24,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 class UserControllerTest {
@@ -69,7 +68,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(userRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Username or Password cannot be empty"));
+                .andExpect(jsonPath("$.message").value("Username or password cannot be empty"));
     }
 
     @Test
@@ -83,7 +82,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(userRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Username or Password cannot be empty"));
+                .andExpect(jsonPath("$.message").value("Username or password cannot be empty"));
     }
 
     @Test
@@ -96,7 +95,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(user)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("User Successfully Registered"));
+                .andExpect(jsonPath("$.message").value("User Successfully Registered"));
     }
 
     @Test
@@ -111,7 +110,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(user)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Username already taken"));
+                .andExpect(jsonPath("$.message").value("Username already taken"));
     }
 
     @Test

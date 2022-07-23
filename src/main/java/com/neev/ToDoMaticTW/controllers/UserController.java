@@ -35,19 +35,24 @@ public class UserController {
 
     @PostMapping("/auth/register")
     ResponseEntity registerUser(@RequestBody UserRequest userRequest){
+        Map<String, String> body = new HashMap<>();
 
         if(isUsernameOrPasswordNull(userRequest.getUsername(), userRequest.getPassword())){
-            return  ResponseEntity.badRequest().body("Username or Password cannot be empty");
+            body.put("message", "Username or password cannot be empty");
+            return  ResponseEntity.badRequest().body(body);
         }
 
         String encryptedPassword = passwordEncoder.encode(userRequest.getPassword());
         User user = new User(userRequest.getUsername(), encryptedPassword);
 
-        if(userService.doesUserExistsAlready(user.getUsername()))
-            return ResponseEntity.badRequest().body("Username already taken");
+        if(userService.doesUserExistsAlready(user.getUsername())) {
+            body.put("message", "Username already taken");
+            return ResponseEntity.badRequest().body(body);
+        }
 
         userService.saveUser(user);
-        return ResponseEntity.ok().body("User Successfully Registered");
+        body.put("message", "User Successfully Registered");
+        return ResponseEntity.ok().body(body);
     }
 
     private boolean isUsernameOrPasswordNull(String username, String password){
@@ -56,9 +61,11 @@ public class UserController {
 
     @PostMapping("/auth/login")
     public ResponseEntity login(@RequestBody UserRequest userRequest){
+        Map<String, String> body = new HashMap<>();
 
         if(isUsernameOrPasswordNull(userRequest.getUsername(), userRequest.getPassword())){
-            return  ResponseEntity.badRequest().body("Username or Password cannot be empty");
+            body.put("message", "Username or password cannot be empty");
+            return  ResponseEntity.badRequest().body(body);
         }
 
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
@@ -67,7 +74,6 @@ public class UserController {
         try {
             Authentication authentication = customAuthenticationManager.authenticate(usernamePasswordAuthenticationToken);
             String token = jwtUtils.generateToken(authentication);
-            Map<String, String> body = new HashMap<>();
 
             body.put("message", "Login Successful");
             body.put("username", authentication.getName());
