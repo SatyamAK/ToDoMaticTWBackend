@@ -1,7 +1,7 @@
 package com.neev.ToDoMaticTW.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neev.ToDoMaticTW.models.User;
+import com.neev.ToDoMaticTW.models.UsersTasks;
 import com.neev.ToDoMaticTW.requests.UserRequest;
 import com.neev.ToDoMaticTW.security.CustomAuthenticationManager;
 import com.neev.ToDoMaticTW.security.JWTUtils;
@@ -15,9 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 public class UserController {
@@ -84,8 +83,14 @@ public class UserController {
     }
 
     @GetMapping("/")
-    public ResponseEntity getAllTasks(@RequestParam String username){
-        System.out.println("hi");
-        return ResponseEntity.ok().body(username);
+    public ResponseEntity getAllTasks(@RequestParam String username) throws Exception {
+        List<UsersTasks> tasksList = userService.getTasks(username);
+        Map<String, List<UsersTasks>> body = new HashMap<>(){
+            {
+                put("tasks", tasksList);
+            }
+        };
+
+        return ResponseEntity.ok().body(body);
     }
 }

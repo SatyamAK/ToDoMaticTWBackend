@@ -1,6 +1,7 @@
 package com.neev.ToDoMaticTW.services;
 
 import com.neev.ToDoMaticTW.models.User;
+import com.neev.ToDoMaticTW.models.UsersTasks;
 import com.neev.ToDoMaticTW.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,7 +27,16 @@ public class UserService implements UserDetailsService {
             }
         };
 
+        List<UsersTasks> tasks = new ArrayList<>(){
+            {
+                add(new UsersTasks("eating", true));
+                add(new UsersTasks("coding", true));
+                add(new UsersTasks("sleeping", false));
+            }
+        };
+
         user.setAuthorities(authorities);
+        user.setTasks(tasks);
         userRepository.save(user);
         return user;
     }
@@ -43,5 +53,13 @@ public class UserService implements UserDetailsService {
         );
 
         return user;
+    }
+
+    public List<UsersTasks> getTasks(String username) throws Exception{
+
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> new UsernameNotFoundException("Oops Something Went wrong...")
+        );
+        return user.getTasks();
     }
 }

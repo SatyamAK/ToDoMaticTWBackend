@@ -2,8 +2,10 @@ package com.neev.ToDoMaticTW.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neev.ToDoMaticTW.models.User;
+import com.neev.ToDoMaticTW.models.UsersTasks;
 import com.neev.ToDoMaticTW.requests.UserRequest;
 import com.neev.ToDoMaticTW.security.CustomAuthenticationManager;
+import com.neev.ToDoMaticTW.security.JWTUtils;
 import com.neev.ToDoMaticTW.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,7 +23,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,6 +43,8 @@ class UserControllerTest {
     UserService userService;
     @MockBean
     CustomAuthenticationManager customAuthenticationManager;
+    @MockBean
+    JWTUtils jwtUtils;
     @Mock
     UserController userController;
 
@@ -48,7 +55,6 @@ class UserControllerTest {
                         .apply(springSecurity())
                         .build();
     }
-
     @Test
     @DisplayName("Testing Registration without any user")
     void registrationWithBlankUserShouldGiveStatusBadRequest() throws Exception {
@@ -115,7 +121,7 @@ class UserControllerTest {
 
     @Test
     @DisplayName("Testing Login with blank User")
-    void LoginWithoutBodyShouldGiveBadRequest() throws Exception {
+    void loginWithoutBodyShouldGiveBadRequest() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/auth/login"))
                 .andExpect(status().isBadRequest());
@@ -123,7 +129,7 @@ class UserControllerTest {
 
     @Test
     @DisplayName("Testing login with correct user details")
-    void LoginWithUserDetailsShouldGiveOk() throws Exception {
+    void loginWithUserDetailsShouldGiveOk() throws Exception {
         User user = new User("test", "password");
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                 mock(UsernamePasswordAuthenticationToken.class);
@@ -136,9 +142,11 @@ class UserControllerTest {
                 .andExpect(status().isOk());
     }
 
+    private String TOKEN = "Bearer token";
+    private String HEADER = "Authorization";
     @Test
     @DisplayName("Testing login with correct user details")
-    void LoginWithInvalidUsernameShouldGiveUnauthorized() throws Exception {
+    void loginWithInvalidUsernameShouldGiveUnauthorized() throws Exception {
         User user = new User("test", "password");
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                 mock(UsernamePasswordAuthenticationToken.class);
@@ -154,7 +162,7 @@ class UserControllerTest {
 
     @Test
     @DisplayName("Testing login with correct user details")
-    void LoginWithInvalidPasswordShouldGiveUnauthorized() throws Exception {
+    void loginWithInvalidPasswordShouldGiveUnauthorized() throws Exception {
         User user = new User("test", "password");
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                 mock(UsernamePasswordAuthenticationToken.class);
@@ -170,9 +178,66 @@ class UserControllerTest {
 
     @Test
     @DisplayName("Testing for access restriction for unauthenticated users")
-    void UnAuthenticatedUsersShouldNotBeAccessAnyOtherAPIS() throws Exception {
+    void unAuthenticatedUsersShouldNotBeAccessAnyOtherAPIS() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/?username=test"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Testing for invalid username")
+    void invalidUsernameShouldUnauthorized() throws Exception {
+        List<UsersTasks> tasks = new ArrayList<>(){
+            {
+                add(new UsersTasks());
+                add(new UsersTasks());
+                add(new UsersTasks());
+            }
+        };
+
+        when(userService.getTasks(anyString())).thenThrow(new UsernameNotFoundException("Oops something went wrong"));
+        when(jwtUtils.getUsernameFromToken(any())).thenReturn("test");
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/?username=test")
+                        .header(HEADER, TOKEN))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Testing for blank username")
+    void blankUsernameShouldGetBadRequest() throws Exception {
+        List<UsersTasks> tasks = new ArrayList<>(){
+            {
+                add(new UsersTasks());
+                add(new UsersTasks());
+                add(new UsersTasks());
+            }
+        };
+
+        when(jwtUtils.getUsernameFromToken(any())).thenReturn("test");
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/")
+                        .header(HEADER, TOKEN))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Testing for authenticated user")
+    void authenticatedUserShouldGetListOfTasks() throws Exception {
+        List<UsersTasks> tasks = new ArrayList<>(){
+            {
+                add(new UsersTasks());
+                add(new UsersTasks());
+                add(new UsersTasks());
+            }
+        };
+
+        when(userService.getTasks(anyString())).thenReturn(tasks);
+        when(jwtUtils.getUsernameFromToken(any())).thenReturn("test");
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/?username=test")
+                .header(HEADER, TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tasks", hasSize(3)));
     }
 }

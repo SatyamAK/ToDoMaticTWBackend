@@ -1,10 +1,7 @@
 package com.neev.ToDoMaticTW.models;
 
-import org.springframework.data.annotation.Id;
-
 public class UsersTasks {
-    @Id
-    private String id;
+    private Integer id;
     private String title;
     private boolean isDone;
 
@@ -17,12 +14,8 @@ public class UsersTasks {
         this.isDone = isDone;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getTitle() {
@@ -31,6 +24,10 @@ public class UsersTasks {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public boolean isDone() {
