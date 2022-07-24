@@ -1,15 +1,21 @@
 package com.neev.ToDoMaticTW.models;
 
-public class UsersTasks {
+public class UsersTask {
     private Integer id;
     private String title;
     private boolean isDone;
 
-    public UsersTasks(){
+    public UsersTask(Integer id, String title, boolean isDone) {
+        this.id = id;
+        this.title = title;
+        this.isDone = isDone;
+    }
+
+    public UsersTask(){
 
     }
 
-    public UsersTasks(String title, boolean isDone) {
+    public UsersTask(String title, boolean isDone) {
         this.title = title;
         this.isDone = isDone;
     }
@@ -30,7 +36,7 @@ public class UsersTasks {
         this.id = id;
     }
 
-    public boolean isDone() {
+    public boolean getDone() {
         return isDone;
     }
 

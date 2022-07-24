@@ -1,7 +1,7 @@
 package com.neev.ToDoMaticTW.controllers;
 
 import com.neev.ToDoMaticTW.models.User;
-import com.neev.ToDoMaticTW.models.UsersTasks;
+import com.neev.ToDoMaticTW.models.UsersTask;
 import com.neev.ToDoMaticTW.requests.UserRequest;
 import com.neev.ToDoMaticTW.security.CustomAuthenticationManager;
 import com.neev.ToDoMaticTW.security.JWTUtils;
@@ -83,11 +83,52 @@ public class UserController {
     }
 
     @GetMapping("/")
-    public ResponseEntity getAllTasks(@RequestParam String username) throws Exception {
-        List<UsersTasks> tasksList = userService.getTasks(username);
-        Map<String, List<UsersTasks>> body = new HashMap<>(){
+    public ResponseEntity getAllTasks(@RequestParam String username) {
+        List<UsersTask> tasksList = userService.getTasks(username);
+        Map<String, List<UsersTask>> body = new HashMap<>(){
             {
                 put("tasks", tasksList);
+            }
+        };
+
+        return ResponseEntity.ok().body(body);
+    }
+
+    @PostMapping("/addTask")
+    public ResponseEntity addNewTask(@RequestParam String username, @RequestBody UsersTask usersTask){
+
+        List<UsersTask> taskList = userService.addTask(username, usersTask);
+        Map<String, List<UsersTask>> body = new HashMap<>(){
+            {
+                put("updated_tasks", taskList);
+            }
+        };
+
+        return ResponseEntity.ok().body(body);
+    }
+
+    @PutMapping("/updateTask")
+    public ResponseEntity updateTask(@RequestParam String username, @RequestBody UsersTask usersTask){
+
+        List<UsersTask> taskList = userService.updateTask(username, usersTask);
+
+        Map<String, List<UsersTask>> body = new HashMap<>(){
+            {
+                put("updated_tasks", taskList);
+            }
+        };
+
+        return ResponseEntity.ok().body(body);
+    }
+
+    @DeleteMapping("/deleteTask")
+    public ResponseEntity deleteTask(@RequestParam String username, @RequestParam Integer taskId){
+
+        List<UsersTask> taskList = userService.deleteTask(username, taskId);
+
+        Map<String, List<UsersTask>> body = new HashMap<>(){
+            {
+                put("updated_tasks", taskList);
             }
         };
 

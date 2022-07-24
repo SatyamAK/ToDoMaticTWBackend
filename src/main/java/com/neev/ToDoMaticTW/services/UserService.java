@@ -1,7 +1,7 @@
 package com.neev.ToDoMaticTW.services;
 
 import com.neev.ToDoMaticTW.models.User;
-import com.neev.ToDoMaticTW.models.UsersTasks;
+import com.neev.ToDoMaticTW.models.UsersTask;
 import com.neev.ToDoMaticTW.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,13 +27,7 @@ public class UserService implements UserDetailsService {
             }
         };
 
-        List<UsersTasks> tasks = new ArrayList<>(){
-            {
-                add(new UsersTasks("eating", true));
-                add(new UsersTasks("coding", true));
-                add(new UsersTasks("sleeping", false));
-            }
-        };
+        List<UsersTask> tasks = new ArrayList<>();
 
         user.setAuthorities(authorities);
         user.setTasks(tasks);
@@ -55,11 +49,60 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    public List<UsersTasks> getTasks(String username) throws Exception{
+    public List<UsersTask> getTasks(String username) {
 
         User user = userRepository.findByUsername(username).orElseThrow(
                 () -> new UsernameNotFoundException("Oops Something Went wrong...")
         );
+        return user.getTasks();
+    }
+
+    public List<UsersTask> addTask(String username, UsersTask usersTask) {
+
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> new UsernameNotFoundException("Oops something went wrong")
+        );
+
+        Integer base = 1;
+        Integer newId = base + user.getTasks().size();
+        usersTask.setId(newId);
+        user.getTasks().add(usersTask);
+        userRepository.save(user);
+        return user.getTasks();
+    }
+
+    public List<UsersTask> updateTask(String username, UsersTask usersTask) {
+
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> new UsernameNotFoundException("Oops something went wrong")
+        );
+
+        user.getTasks().get(usersTask.getId() - 1).setTitle(usersTask.getTitle());
+        user.getTasks().get(usersTask.getId() - 1).setDone(usersTask.getDone());
+        userRepository.save(user);
+        return user.getTasks();
+    }
+
+    public List<UsersTask> deleteTask(String username, int taskId) {
+
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> new UsernameNotFoundException("Oops something went wrong")
+        );
+        List<UsersTask> tasks = new ArrayList<>();
+
+        for(int i=0; i<taskId-1; ++i){
+            tasks.add(user.getTasks().get(i));
+        }
+
+        if(taskId < user.getTasks().size())
+            for(int i=taskId; i<user.getTasks().size(); ++i){
+                UsersTask taskToBeAdded = user.getTasks().get(i);
+                taskToBeAdded.setId(taskToBeAdded.getId()-1);
+                tasks.add(taskToBeAdded);
+            }
+
+        user.setTasks(tasks);
+        userRepository.save(user);
         return user.getTasks();
     }
 }

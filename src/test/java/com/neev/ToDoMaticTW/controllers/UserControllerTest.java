@@ -1,8 +1,9 @@
 package com.neev.ToDoMaticTW.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neev.ToDoMaticTW.models.User;
-import com.neev.ToDoMaticTW.models.UsersTasks;
+import com.neev.ToDoMaticTW.models.UsersTask;
 import com.neev.ToDoMaticTW.requests.UserRequest;
 import com.neev.ToDoMaticTW.security.CustomAuthenticationManager;
 import com.neev.ToDoMaticTW.security.JWTUtils;
@@ -187,11 +188,11 @@ class UserControllerTest {
     @Test
     @DisplayName("Testing for invalid username")
     void invalidUsernameShouldUnauthorized() throws Exception {
-        List<UsersTasks> tasks = new ArrayList<>(){
+        List<UsersTask> tasks = new ArrayList<>(){
             {
-                add(new UsersTasks());
-                add(new UsersTasks());
-                add(new UsersTasks());
+                add(new UsersTask());
+                add(new UsersTask());
+                add(new UsersTask());
             }
         };
 
@@ -206,11 +207,11 @@ class UserControllerTest {
     @Test
     @DisplayName("Testing for blank username")
     void blankUsernameShouldGetBadRequest() throws Exception {
-        List<UsersTasks> tasks = new ArrayList<>(){
+        List<UsersTask> tasks = new ArrayList<>(){
             {
-                add(new UsersTasks());
-                add(new UsersTasks());
-                add(new UsersTasks());
+                add(new UsersTask());
+                add(new UsersTask());
+                add(new UsersTask());
             }
         };
 
@@ -224,11 +225,11 @@ class UserControllerTest {
     @Test
     @DisplayName("Testing for authenticated user")
     void authenticatedUserShouldGetListOfTasks() throws Exception {
-        List<UsersTasks> tasks = new ArrayList<>(){
+        List<UsersTask> tasks = new ArrayList<>(){
             {
-                add(new UsersTasks());
-                add(new UsersTasks());
-                add(new UsersTasks());
+                add(new UsersTask());
+                add(new UsersTask());
+                add(new UsersTask());
             }
         };
 
@@ -239,5 +240,70 @@ class UserControllerTest {
                 .header(HEADER, TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tasks", hasSize(3)));
+    }
+
+    @Test
+    @DisplayName("Authenticated with correct username should be able to add new task")
+    public void authenticatedUserShouldBeAbleToAddNewTask() throws Exception {
+        UsersTask newTask = new UsersTask("Eating", true);
+        List<UsersTask> tasks = new ArrayList<>(){
+            {
+                add(newTask);
+            }
+        };
+
+        when(userService.addTask(anyString(), any())).thenReturn(tasks);
+        when(jwtUtils.getUsernameFromToken(any())).thenReturn("test");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/addTask/?username=test")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(newTask))
+                .header(HEADER, TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.updated_tasks", hasSize(1)));
+    }
+
+    @Test
+    @DisplayName("Test for updating a task")
+    void authenticatedUsersShouldBeAbleToUpdateATask() throws Exception {
+        UsersTask newTask = new UsersTask("Eating", true);
+        List<UsersTask> tasks = new ArrayList<>(){
+            {
+                add(newTask);
+            }
+        };
+
+        when(userService.updateTask(anyString(), any())).thenReturn(tasks);
+        when(jwtUtils.getUsernameFromToken(any())).thenReturn("test");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/updateTask/?username=test")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(newTask))
+                        .header(HEADER, TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.updated_tasks", hasSize(1)));
+    }
+
+    @Test
+    @DisplayName("Test for deleting a task")
+    void authenticatedUsersShouldBeAbleToDeleteATask() throws Exception {
+        UsersTask newTask = new UsersTask("Eating", true);
+        List<UsersTask> tasks = new ArrayList<>(){
+            {
+                add(newTask);
+            }
+        };
+
+        when(userService.deleteTask(anyString(), anyInt())).thenReturn(tasks);
+        when(jwtUtils.getUsernameFromToken(any())).thenReturn("test");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .delete("/deleteTask/?username=test&taskId=1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HEADER, TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.updated_tasks", hasSize(1)));
     }
 }

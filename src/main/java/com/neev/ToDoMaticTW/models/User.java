@@ -3,10 +3,8 @@ package com.neev.ToDoMaticTW.models;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "users")
@@ -16,7 +14,7 @@ public class User implements UserDetails {
     private String username;
     private String password;
     private List<GrantedAuthority> authorities;
-    private List<UsersTasks> tasks;
+    private List<UsersTask> tasks;
 
     public User() {
     }
@@ -73,11 +71,11 @@ public class User implements UserDetails {
         this.authorities = authorities;
     }
 
-    public List<UsersTasks> getTasks() {
+    public List<UsersTask> getTasks() {
         return tasks;
     }
 
-    public void setTasks(List<UsersTasks> tasks) {
+    public void setTasks(List<UsersTask> tasks) {
         this.tasks = tasks;
     }
 }
