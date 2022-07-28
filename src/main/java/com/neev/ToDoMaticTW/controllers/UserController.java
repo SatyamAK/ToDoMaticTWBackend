@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
     @Autowired
@@ -78,7 +79,8 @@ public class UserController {
 
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body);
         } catch (Exception e){
-            return ResponseEntity.status(401).body(e.getMessage());
+            body.put("message", e.getMessage());
+            return ResponseEntity.status(401).contentType(MediaType.APPLICATION_JSON).body(body);
         }
     }
 

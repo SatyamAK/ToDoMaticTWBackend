@@ -158,7 +158,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(user)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(content().string("User not found"));
+                .andExpect(jsonPath("$.message").value("User not found"));
     }
 
     @Test
@@ -174,7 +174,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(user)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(content().string("Wrong password"));
+                .andExpect(jsonPath("$.message").value("Wrong password"));
     }
 
     @Test
