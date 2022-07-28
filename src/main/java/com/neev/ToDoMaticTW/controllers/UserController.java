@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
     @Autowired
@@ -84,7 +83,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping("/getAllTasks")
     public ResponseEntity getAllTasks(@RequestParam String username) {
         List<UsersTask> tasksList = userService.getTasks(username);
         Map<String, List<UsersTask>> body = new HashMap<>(){
